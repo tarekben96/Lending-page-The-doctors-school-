@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>دورات معتمدة — سجّل الآن</title>
+  <meta name="description" content="سجّل في دورات معتمدة من وزارة التكوين. شهادة رسمية، تكوين تطبيقي، دعم بعد التكوين." />
+  <style>
+    /* Minimal styling (mobile-first) */
+    body{font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;margin:0;padding:18px;color:#0b1730}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    h1{color:#0b4689;margin:0 0 6px;font-size:20px}
+    p.lead{margin:0 0 12px;color:#6b7280}
+    .card{background:white;padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(11,70,137,0.06)}
+    .cta{display:flex;gap:10px;flex-wrap:wrap}
+    .btn-primary{background:linear-gradient(90deg,#FF7A18,#ff8b4d);color:white;padding:12px 14px;border-radius:10px;border:none;font-weight:700;text-decoration:none}
+    .btn-secondary{background:#eef7ff;padding:10px 12px;border-radius:10px;border:1px solid #E6F0FF;color:#0b4689;text-decoration:none}
+    .bullets{margin:12px 0;padding-left:18px;color:#344054}
+    .testimonials{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+    @media(min-width:900px){ .layout{display:grid;grid-template-columns:1fr 380px;gap:16px} .testimonials{grid-template-columns:repeat(3,1fr)} }
+    input,textarea{padding:10px;border-radius:8px;border:1px solid #e6eef8;width:100%;box-sizing:border-box}
+    .small{font-size:13px;color:#6b7280}
+    footer{margin-top:18px;text-align:center;color:#6b7280}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <strong style="color:#0b4689">مركز التكوين المعتمد</strong>
+        <div class="small">دورات معتمدة من وزارة التكوين</div>
+      </div>
+      <div class="small">المقاعد محدودة • 16 سنة فما فوق</div>
+    </header>
+
+    <main class="card">
+      <div class="layout">
+        <section>
+          <h1>سجّل الآن في دورات معتمدة من وزارة التكوين… وابدأ مسارك المهني بثقة!</h1>
+          <p class="lead">فرصتك لاكتساب مهارة عملية تفتح لك أبواب العمل والتوظيف. تكوين تطبيقي، متابعة شخصية، وشهادة رسمية.</p>
+
+          <ul class="bullets">
+            <li>✅ شهادة رسمية معتمدة من وزارة التكوين.</li>
+            <li>✅ تكوين تطبيقي + تدريبات ميدانية.</li>
+            <li>✅ خصم 20% للمسجلين الأوائل + جلسة استشارة مجانية.</li>
+            <li>✅ دعم ومتابعة بعد التكوين.</li>
+          </ul>
+
+          <div class="muted small" style="margin-top:6px">شاهد الفيديو التعريفي أو تواصل معنا عبر WhatsApp للاستفسار.</div>
+
+          <!-- Testimonials (populated via JS from /api/testimonials) -->
+          <div class="testimonials" id="testimonials"></div>
+
+        </section>
+
+        <aside>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <a id="primaryCta" class="btn-primary" href="https://takwin.dz/" target="_blank" rel="noopener" onclick="trackAndRedirect(event)">سجّل الآن عبر منصة تكوين الرسمية</a>
+            <a class="btn-secondary" href="https://wa.me/REPLACE_WITH_PHONE?text=السلام+عليكم+أريد+مزيد+من+المعلومات+حول+الدورات" target="_blank">💬 تواصل عبر WhatsApp</a>
+
+            <!-- Simple lead capture -->
+            <div style="background:#fbfdff;padding:10px;border-radius:10px">
+              <div style="font-weight:700;margin-bottom:6px">أو اترك بياناتك وسنتصل بك</div>
+              <form id="leadForm">
+                <input id="name" name="name" placeholder="الاسم الكامل" />
+                <div style="height:8px"></div>
+                <input id="phone" name="phone" placeholder="رقم الهاتف (مثال: 06********)" required />
+                <div style="height:8px"></div>
+                <textarea id="message" name="message" placeholder="سؤال أو ملاحظة (اختياري)" rows="2"></textarea>
+                <div style="height:8px"></div>
+                <button type="submit" class="btn-primary" style="width:100%">أريد المساعدة بالتسجيل</button>
+                <div class="small" style="margin-top:8px">نحترم خصوصيتك — سنستخدم بياناتك للاتصال بخصوص التسجيل فقط.</div>
+              </form>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="small">
+      <div style="margin-top:10px">العنوان: REPLACE_WITH_ADDRESS • الهاتف: REPLACE_WITH_PHONE</div>
+      <div style="margin-top:6px">حقوق الطبع والنشر © <span id="year"></span> مركز التكوين المعتمد</div>
+    </footer>
+  </div>
+
+  <!-- Minimal JS: fetch testimonials + handle lead form + FB tracking hooks -->
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // fetch testimonials
+    fetch('/api/testimonials').then(r=>r.json()).then(data=>{
+      const container = document.getElementById('testimonials');
+      if(!data || data.length===0){
+        container.innerHTML = '<div class="small">لا توجد شهادات حالياً — سجّل أولاً واستفد من العرض!</div>';
+        return;
+      }
+      container.innerHTML = data.map(t=>`<div style="background:#fff;padding:10px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.04)"><strong>${escapeHtml(t.author)}</strong><div class="small">${escapeHtml(t.content)}</div></div>`).join('');
+    }).catch(()=>{});
+
+    // lead form submit -> POST /api/leads then open whatsapp prefilled or show message
+    const leadForm = document.getElementById('leadForm');
+    leadForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const message = document.getElementById('message').value.trim();
+      if(!phone){ alert('الرجاء إدخال رقم الهاتف'); return; }
+      try{
+        const resp = await fetch('/api/leads', {
+          method:'POST', headers:{'content-type':'application/json'},
+          body: JSON.stringify({name,phone,message,source:'landing'})
+        });
+        const json = await resp.json();
+        if(json.ok){
+          // fire fb lead event (if pixel available client-side)
+          if(window.fbq) try{ fbq('track','Lead'); }catch(err){}
+          // open whatsapp to confirm & collect more details
+          const wa = 'REPLACE_WITH_PHONE'; // with country code
+          const text = encodeURIComponent(`السلام عليكم، اسمي ${name} - ${phone}، أريد المساعدة في التسجيل.`);
+          window.open(`https://wa.me/${wa}?text=${text}`, '_blank');
+        } else {
+          alert('حدث خطأ، حاول مرة أخرى');
+        }
+      }catch(err){ alert('تعذر إرسال الطلب. حاول لاحقاً'); }
+    });
+
+    // Track + redirect CTA (client-side event before opening takwin.dz)
+    function trackAndRedirect(e){
+      // example client-side fbq event
+      if(window.fbq){
+        try{ fbq('track','InitiateCheckout'); }catch(err){}
+      }
+      // allow natural navigation (link target _blank)
+    }
+
+    // small helper
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])}); }
+  </script>
+</body>
+</html>
