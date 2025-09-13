@@ -135,137 +135,4 @@
     function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])}); }
   </script>
 </body>
-</html>    .faq-item{margin-bottom:10px}
-    .faq-item strong{display:block;margin-bottom:4px;color:#0f172a}
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <div>
-        <strong>مركز التكوين المعتمد</strong>
-        <div class="small">دورات معتمدة من وزارة التكوين</div>
-      </div>
-      <div class="small">المقاعد محدودة • ابتداءً من 16 سنة</div>
-    </header>
-
-    <main class="card">
-      <div class="layout">
-        <section>
-          <h1>سجّل الآن في دورات معتمدة… وابدأ مسارك المهني بثقة!</h1>
-          <p class="lead">فرصتك لاكتساب مهارات عملية تفتح لك أبواب العمل والتوظيف. تكوين تطبيقي، متابعة شخصية، وشهادة رسمية معتمدة.</p>
-
-          <ul class="bullets">
-            <li>شهادة رسمية معتمدة من وزارة التكوين.</li>
-            <li>تكوين تطبيقي + تدريبات ميدانية.</li>
-            <li>خصم 20% للمسجلين الأوائل + جلسة استشارة مجانية.</li>
-            <li>دعم ومتابعة بعد التكوين.</li>
-          </ul>
-
-          <div class="small" style="margin-top:8px">📹 شاهد الفيديو التعريفي (ضع رابط YouTube هنا) أو تواصل عبر WhatsApp للاستفسار.</div>
-
-          <!-- Testimonials -->
-          <div class="testimonials" id="testimonials"></div>
-        </section>
-
-        <aside>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <a id="primaryCta" class="btn-primary" href="https://takwin.dz/" target="_blank" rel="noopener" onclick="trackAndRedirect(event)">سجّل الآن عبر منصة تكوين الرسمية</a>
-            <a class="btn-secondary" href="https://wa.me/REPLACE_WITH_PHONE?text=السلام+عليكم+أريد+مزيد+من+المعلومات+حول+الدورات" target="_blank">💬 تواصل عبر WhatsApp</a>
-
-            <!-- Lead Capture -->
-            <div style="background:#f1f5f9;padding:12px;border-radius:12px">
-              <div style="font-weight:700;margin-bottom:8px">أو اترك بياناتك وسنتصل بك</div>
-              <form id="leadForm">
-                <input id="name" name="name" placeholder="الاسم الكامل" />
-                <div style="height:8px"></div>
-                <input id="phone" name="phone" placeholder="رقم الهاتف (مثال: 06********)" required />
-                <div style="height:8px"></div>
-                <textarea id="message" name="message" placeholder="سؤال أو ملاحظة (اختياري)" rows="2"></textarea>
-                <div style="height:10px"></div>
-                <button type="submit" class="btn-primary" style="width:100%">📞 أريد المساعدة بالتسجيل</button>
-                <div class="small" style="margin-top:10px">🔒 نحترم خصوصيتك — سنستخدم بياناتك للتواصل بخصوص التسجيل فقط.</div>
-              </form>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </main>
-
-    <!-- FAQ Section -->
-    <section class="faq">
-      <h2>الأسئلة الشائعة</h2>
-      <div class="faq-item">
-        <strong>هل الشهادة معترف بها؟</strong>
-        نعم، الشهادة رسمية ومعتمدة من وزارة التكوين.
-      </div>
-      <div class="faq-item">
-        <strong>ما هو شرط العمر؟</strong>
-        التكوين مفتوح ابتداءً من 16 سنة ولا يوجد سقف عمري.
-      </div>
-      <div class="faq-item">
-        <strong>كيف أسجّل؟</strong>
-        يمكنك التسجيل مباشرة عبر منصة تكوين أو ترك بياناتك وسنتصل بك لمساعدتك.
-      </div>
-    </section>
-
-    <footer>
-      <div>📍 العنوان: REPLACE_WITH_ADDRESS • ☎️ الهاتف: REPLACE_WITH_PHONE</div>
-      <div style="margin-top:6px">© <span id="year"></span> مركز التكوين المعتمد — جميع الحقوق محفوظة</div>
-    </footer>
-  </div>
-
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Testimonials placeholder
-    fetch('/api/testimonials').then(r=>r.json()).then(data=>{
-      const container = document.getElementById('testimonials');
-      if(!data || data.length===0){
-        container.innerHTML = '<div class="small">🌟 لا توجد شهادات حالياً — كن أول من يشارك تجربته!</div>';
-        return;
-      }
-      container.innerHTML = data.map(t=>`
-        <div class="testimonial">
-          <strong>${escapeHtml(t.author)}</strong>
-          <div class="small">${escapeHtml(t.content)}</div>
-        </div>
-      `).join('');
-    }).catch(()=>{});
-
-    // Lead form
-    const leadForm = document.getElementById('leadForm');
-    leadForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const message = document.getElementById('message').value.trim();
-      if(!phone){ alert('الرجاء إدخال رقم الهاتف'); return; }
-      try{
-        const resp = await fetch('/api/leads', {
-          method:'POST', headers:{'content-type':'application/json'},
-          body: JSON.stringify({name,phone,message,source:'landing'})
-        });
-        const json = await resp.json();
-        if(json.ok){
-          if(window.fbq) try{ fbq('track','Lead'); }catch(err){}
-          const wa = 'REPLACE_WITH_PHONE';
-          const text = encodeURIComponent(`السلام عليكم، اسمي ${name} - ${phone}، أريد المساعدة في التسجيل.`);
-          window.open(`https://wa.me/${wa}?text=${text}`, '_blank');
-        } else {
-          alert('حدث خطأ، حاول مرة أخرى');
-        }
-      }catch(err){ alert('تعذر إرسال الطلب. حاول لاحقاً'); }
-    });
-
-    function trackAndRedirect(e){
-      if(window.fbq){
-        try{ fbq('track','InitiateCheckout'); }catch(err){}
-      }
-    }
-
-    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-  </script>
-</body>
 </html>
