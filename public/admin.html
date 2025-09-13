@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin - Takwin Landing</title>
+<style>
+  body{font-family:Arial;margin:0;background:#f4f7fb;padding:18px;color:#0b1730}
+  .wrap{max-width:1000px;margin:0 auto}
+  .card{background:white;padding:14px;border-radius:10px;box-shadow:0 8px 30px rgba(11,70,137,0.06)}
+  input,textarea,select{padding:8px;border-radius:8px;border:1px solid #e6eef8;width:100%;box-sizing:border-box}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:900px){ .grid{grid-template-columns:1fr 320px}}
+  .btn{padding:10px 12px;border-radius:8px;border:none;background:#0b4689;color:white}
+  .muted{color:#6b7280;font-size:13px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #f0f4f8;text-align:left}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>لوحة التحكم — Takwin Landing</h2>
+
+    <div id="loginCard" class="card">
+      <h3>تسجيل الدخول</h3>
+      <div style="max-width:420px">
+        <input id="user" placeholder="اسم المستخدم" />
+        <div style="height:8px"></div>
+        <input id="pass" placeholder="كلمة المرور" type="password" />
+        <div style="height:8px"></div>
+        <button id="loginBtn" class="btn">دخول</button>
+        <div id="loginMsg" class="muted"></div>
+      </div>
+    </div>
+
+    <div id="adminArea" class="card hidden" style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Dashboard</h3>
+        <div><button id="logoutBtn" class="btn" style="background:#c23">خروج</button></div>
+      </div>
+
+      <div style="margin-top:12px" class="grid">
+        <!-- left: manage courses -->
+        <div>
+          <h4>الدورات</h4>
+          <div style="margin-bottom:8px">
+            <input id="c_title" placeholder="عنوان الدورة" />
+            <div style="height:8px"></div>
+            <input id="c_slug" placeholder="slug (مثال: it-basics)" />
+            <div style="height:8px"></div>
+            <input id="c_duration" placeholder="المدة" />
+            <div style="height:8px"></div>
+            <input id="c_price" placeholder="السعر/ملاحظة الدفع" />
+            <div style="height:8px"></div>
+            <input id="c_image" placeholder="رابط صورة (URL)" />
+            <div style="height:8px"></div>
+            <textarea id="c_desc" placeholder="وصف الدورة" rows="3"></textarea>
+            <div style="height:8px"></div>
+            <button id="addCourse" class="btn">إضافة دورة</button>
+          </div>
+
+          <div>
+            <h5>قائمة الدورات</h5>
+            <div id="coursesList" style="max-height:260px;overflow:auto"></div>
+          </div>
+        </div>
+
+        <!-- right: testimonials + leads -->
+        <div>
+          <h4>الشهادات</h4>
+          <input id="t_author" placeholder="اسم الطالب" />
+          <div style="height:8px"></div>
+          <textarea id="t_content" placeholder="نص الشهادة" rows="3"></textarea>
+          <div style="height:8px"></div>
+          <button id="addTest" class="btn">إضافة شهادة</button>
+
+          <div style="height:18px"></div>
+
+          <h4>Leads (الطلبات)</h4>
+          <div id="leadsList" style="max-height:300px;overflow:auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const loginCard = document.getElementById('loginCard');
+  const adminArea = document.getElementById('adminArea');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginMsg = document.getElementById('loginMsg');
+
+  loginBtn.onclick = async ()=>{
+    const user = document.getElementById('user').value;
+    const pass = document.getElementById('pass').value;
+    const resp = await fetch('/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({user,pass})});
+    if(resp.ok){ loginCard.classList.add('hidden'); adminArea.classList.remove('hidden'); loadData(); } else {
+      loginMsg.textContent = 'فشل تسجيل الدخول — تحقق من الإعدادات';
+    }
+  };
+  logoutBtn.onclick = async ()=>{
+    await fetch('/admin/logout',{method:'POST'}); location.reload();
+  };
+
+  async function loadData(){
+    await loadCourses();
+    await loadTestimonials();
+    await loadLeads();
+  }
+
+  // Courses
+  document.getElementById('addCourse').onclick = async ()=>{
+    const payload = {
+      title: document.getElementById('c_title').value,
+      slug: document.getElementById('c_slug').value,
+      duration: document.getElementById('c_duration').value,
+      price: document.getElementById('c_price').value,
+      image: document.getElementById('c_image').value,
+      description: document.getElementById('c_desc').value
+    };
+    const res = await fetch('/admin/api/courses',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+    if(res.ok) { alert('تمت الإضافة'); loadCourses(); }
+    else alert('خطأ في الإضافة');
+  };
+
+  async function loadCourses(){
+    const res = await fetch('/admin/api/courses'); if(!res.ok){ alert('Unauthorized'); return; }
+    const courses = await res.json();
+    const container = document.getElementById('coursesList');
+    container.innerHTML = courses.map(c=>`
+      <div style="padding:8px;border-bottom:1px solid #f0f4f8">
+        <strong>${escapeHtml(c.title)}</strong><div class="small">${escapeHtml(c.duration)} • ${escapeHtml(c.price)}</div>
+        <div style="margin-top:6px"><button onclick="deleteCourse(${c.id})" style="background:#c23;border:none;color:white;padding:6px;border-radius:6px">حذف</button></div>
+      </div>
+    `).join('');
+  }
+  async function deleteCourse(id){
+    if(!confirm('تأكيد الحذف؟')) return;
+    const res = await fetch(`/admin/api/courses/${id}`,{method:'DELETE'});
+    if(res.ok) loadCourses();
+  }
+
+  // Testimonials
+  document.getElementById('addTest').onclick = async ()=>{
+    const author = document.getElementById('t_author').value;
+    const content = document.getElementById('t_content').value;
+    const res = await fetch('/admin/api/testimonials',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({author,content})});
+    if(res.ok){ alert('تمت الإضافة'); loadTestimonials(); }
+  }
+  async function loadTestimonials(){
+    const res = await fetch('/admin/api/testimonials');
+    if(!res.ok) return;
+    const arr = await res.json();
+    // no preview area in this simple UI
+  }
+
+  // Leads
+  async function loadLeads(){
+    const res = await fetch('/admin/api/leads');
+    if(!res.ok){ alert('Unauthorized'); return; }
+    const leads = await res.json();
+    const el = document.getElementById('leadsList');
+    el.innerHTML = leads.map(l=>`<div style="padding:8px;border-bottom:1px solid #f0f4f8"><strong>${escapeHtml(l.name||'—')}</strong> • ${escapeHtml(l.phone)} <div class="small">${escapeHtml(l.message)||''}</div><div class="small muted">${escapeHtml(l.created_at)}</div></div>`).join('');
+  }
+
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])}); }
+</script>
+</body>
+</html>
